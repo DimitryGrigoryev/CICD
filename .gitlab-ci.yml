@@ -3,12 +3,15 @@ stages:
   - ckeck_style
   - test
   - deploy
+  - notify
 
 build_line:
   stage: build
   script:
     - cd src/grep
-    - make
+    - make s21_grep
+    - make s21_cat
+    - sh ../../ci-notify.sh ✅
   artifacts:
     paths:
       - src/cat/s21_cat
@@ -20,6 +23,7 @@ ccplint_line:
   script:
     - cd src/grep
     - make check_ccplint
+    - sh ../../ci-notify.sh ✅
   allow_failure: false
 
 test_line:
@@ -28,6 +32,7 @@ test_line:
   script:
     - cd src/grep
     - make test
+    - sh ../../ci-notify.sh ✅
   allow_failure: false
 
 deploy_line:
@@ -36,9 +41,16 @@ deploy_line:
   when: manual
   script:
     - cd src/grep
-    - make
+    - make s21_grep
+    - make s21_cat
     - cd ../
     - chmod +x run_deploy.sh
     - ./run_deploy.sh
+    - sh ../ci-notify.sh ✅
   allow_failure: false
 
+notify_error:
+  stage: notify
+  script:
+    - sh ./ci-notify.sh ❌
+  when: on_failure
